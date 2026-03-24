@@ -2,6 +2,12 @@ import '@/app/ui/global.css';
 import { inter } from '@/app/ui/fonts';
 import { lusitana } from '@/app/ui/fonts';
 import { Metadata } from 'next';
+
+const baseUrl = process.env.NEXT_PUBLIC_APP_URL
+  ? new URL(process.env.NEXT_PUBLIC_APP_URL)
+  : process.env.VERCEL_URL
+    ? new URL(`https://${process.env.VERCEL_URL}`)
+    : new URL('http://localhost:3000');
  
 export const metadata: Metadata = {
   title: {
@@ -9,7 +15,7 @@ export const metadata: Metadata = {
     default: 'Acme Dashboard',
   },
   description: 'The official Next.js Learn Dashboard built with App Router.',
-  metadataBase: new URL('https://next-learn-dashboard.vercel.sh'),
+  metadataBase: baseUrl,
 };
  
 export default function RootLayout({
