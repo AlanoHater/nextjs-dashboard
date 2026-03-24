@@ -8,7 +8,10 @@ import { error } from 'console';
 import { signIn } from '@/auth';
 import { AuthError } from 'next-auth';
 
-const sql = postgres(process.env.POSTGRES_URL!, { ssl: 'require' });
+const sql = postgres(process.env.POSTGRES_URL!, {
+  ssl: 'require',
+  prepare: false,
+});
 
 const FormSchema = z.object({
   id: z.string(),
@@ -125,13 +128,21 @@ export async function authenticate(
     await signIn('credentials', formData);
   } catch (error) {
     if (error instanceof AuthError) {
+      console.error('Auth error type:', error.type, error);
       switch (error.type) {
         case 'CredentialsSignin':
           return 'Invalid credentials.';
+        case 'CallbackRouteError':
+          return 'Login failed on server. Check AUTH_SECRET and POSTGRES_URL in Vercel.';
+        case 'UntrustedHost':
+          return 'Untrusted host. Set AUTH_TRUST_HOST=true in Vercel.';
+        case 'MissingSecret':
+          return 'Missing AUTH_SECRET in Vercel environment variables.';
         default:
-          return 'Something went wrong.';
+          return `Auth error: ${error.type}`;
       }
     }
+    console.error('Unexpected auth error:', error);
     throw error;
   }
 }
